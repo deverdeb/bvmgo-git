@@ -2,12 +2,9 @@ package git
 
 import (
 	"fmt"
-	"github.com/deverdeb/bvmgo-term/term"
 	"regexp"
 	"time"
 )
-
-var styleHash = term.Style{Foreground: &term.GrayDark}
 
 var ignoreBefore = time.Date(
 	2020, time.January, 1, 00, 00, 00, 000000000, time.UTC)
@@ -45,12 +42,12 @@ func extractBranches(context extractionContext) error {
 		return fmt.Errorf("could not read git branches\n - cause by: %w", err)
 	}
 
-	term.Printf("\nbranches:\n")
+	fmt.Printf("\nbranches:\n")
 	for _, branch := range branches {
 		if !branchesRegex.MatchString(branch.Name) {
 			return nil
 		}
-		term.Printf(" - branch %s\n", branch)
+		fmt.Printf(" - branch %s\n", branch)
 		hashInfo := findConsolidatedCommitByName(context, branch.Name)
 		if hashInfo != nil {
 			hashInfo.Branches = append(hashInfo.Branches, branch.Name)
@@ -65,13 +62,13 @@ func extractTags(context extractionContext) error {
 		return fmt.Errorf("could not read git tags\n - cause by: %w", err)
 	}
 
-	term.Printf("\ntags:\n")
+	fmt.Printf("\ntags:\n")
 	for _, tag := range tags {
 		if !tagsRegex.MatchString(tag.Name) {
 			return nil
 		}
 
-		term.Printf(" - tag %s\n", tag)
+		fmt.Printf(" - tag %s\n", tag)
 		hashInfo := findConsolidatedCommitByName(context, tag.Name)
 		if hashInfo != nil {
 			hashInfo.Tags = append(hashInfo.Tags, tag)
@@ -90,7 +87,7 @@ func findConsolidatedCommitByHash(context extractionContext, hash Hash) *Consoli
 	}
 	commit, err := GetInfoCommitByHash(hash)
 	if err != nil {
-		term.Printf(term.StyleError.Sprintf("   (!)")+" > failed to read information for hash [%s]: %s\n", styleHash.Sprintf(hash.String()), err.Error())
+		fmt.Printf("   (!) > failed to read information for hash [%s]: %s\n", hash.String(), err.Error())
 		return nil
 	}
 	commitInfo = buildConsolidatedCommitFromCommit(context, commit)
@@ -107,7 +104,7 @@ func findConsolidatedCommitByName(context extractionContext, branchOrTagName str
 	}
 	commit, err := GetInfoCommitByName(branchOrTagName)
 	if err != nil {
-		term.Printf(term.StyleError.Sprintf("   (!)")+" > failed to read information for [%s]: %s\n", styleHash.Sprintf(branchOrTagName), err.Error())
+		fmt.Printf("   (!) > failed to read information for [%s]: %s\n", branchOrTagName, err.Error())
 		return nil
 	}
 	commitInfo := context.hashList[commit.Hash]
@@ -127,7 +124,7 @@ func buildConsolidatedCommitFromCommit(context extractionContext, commit *Commit
 		// Ignore to old commit
 		return nil
 	}
-	term.Printf("   > process commit %s - date %s\n", styleHash.Sprintf(string(commit.Hash)), when.Format("02/01/2006 15:04:05"))
+	fmt.Printf("   > process commit %s - date %s\n", string(commit.Hash), when.Format("02/01/2006 15:04:05"))
 	commitInfo := BuildConsolidatedCommit(commit)
 	for _, parentHash := range commit.Parents {
 		parentCommit := findConsolidatedCommitByHash(context, parentHash)
